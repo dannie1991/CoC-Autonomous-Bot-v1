@@ -5,6 +5,9 @@ description = "Experimental game automation controller"
 requires-python = ">=3.11"
 dependencies = ["opencv-python>=4.10","numpy>=2.0","Pillow>=10.0","PyYAML>=6.0"]
 
+[project.scripts]
+cocbot = "cocbot.cli:main"
+
 [project.optional-dependencies]
 dev = ["pytest>=8.0","ruff>=0.6"]
 
