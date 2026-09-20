@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+
 from .state import BotState
+
 
 @dataclass
 class Controller:
