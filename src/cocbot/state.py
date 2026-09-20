@@ -1,5 +1,6 @@
 from enum import Enum, auto
 
+
 class BotState(Enum):
     OBSERVE = auto()
     COLLECT = auto()
