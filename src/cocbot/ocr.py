@@ -12,6 +12,14 @@ import numpy as np
 class DetectedText:
     value: str
     confidence: float
+    box: tuple[int, int, int, int] | None = None
+
+    @property
+    def center(self) -> tuple[float, float] | None:
+        if self.box is None:
+            return None
+        left, top, right, bottom = self.box
+        return (left + right) / 2, (top + bottom) / 2
 
 
 class TextReader(Protocol):
@@ -30,4 +38,14 @@ class RapidTextReader:
 
     def read(self, image: np.ndarray) -> list[DetectedText]:
         result, _ = self._reader(image)
-        return [DetectedText(value=item[1], confidence=float(item[2])) for item in result or []]
+        texts = []
+        for box, value, confidence in result or []:
+            xs, ys = zip(*box, strict=True)
+            texts.append(
+                DetectedText(
+                    value=value,
+                    confidence=float(confidence),
+                    box=(int(min(xs)), int(min(ys)), int(max(xs)), int(max(ys))),
+                )
+            )
+        return texts
