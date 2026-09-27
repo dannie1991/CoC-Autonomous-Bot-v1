@@ -17,7 +17,9 @@ via ADB. Frames worden alleen tijdelijk in het geheugen gebruikt.
 
 ## Fase 2 — observatie
 
-- [ ] Home, menu, battle, results, pop-up en onbekend scherm onderscheiden
+- [x] Home, menu, battle en results via live Engelse UI-tekst onderscheiden
+- [ ] herkenning met echte MuMu-frames valideren
+- [ ] pop-up en onbekend scherm onderscheiden
 - [ ] Engelse UI en ondersteunde resolutie controleren
 - [ ] resourcewaarden, builders en Town Hall uitlezen
 - [ ] confidence en harde stop bij onzekere observatie
