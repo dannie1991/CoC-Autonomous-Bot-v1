@@ -50,3 +50,24 @@ de CLI leest procesomgevingsvariabelen, geen `.env`-bestand.
 Live verzameling op BETAAA: goud 102 → 2789, elixer 394 → 3782. Het programma
 voerde twee resourceklikken uit en observeerde daarna geen resourcebubbels meer.
 Dit bewijst de verzamelstap op deze interface, niet volledige spelautonomie.
+
+## Beelden voor de volgende stap: upgrades
+
+`--survey-stage` maakt één screenshot en een JSON-observatie zonder te tikken of
+te swipen. Zet zelf eerst het gewenste scherm in MuMu klaar en voer de opdracht
+uit. Gebruik voor elk van de vijf schermen dezelfde optie `--profile`:
+
+```powershell
+.\.venv\Scripts\python.exe -m cocbot.cli --survey-stage home --profile profiles/local/profile.json
+.\.venv\Scripts\python.exe -m cocbot.cli --survey-stage builders --profile profiles/local/profile.json
+.\.venv\Scripts\python.exe -m cocbot.cli --survey-stage building --profile profiles/local/profile.json
+.\.venv\Scripts\python.exe -m cocbot.cli --survey-stage upgrade --profile profiles/local/profile.json
+.\.venv\Scripts\python.exe -m cocbot.cli --survey-stage confirmation --profile profiles/local/profile.json
+```
+
+De stages zijn: leeg hoofdscherm; open builderoverzicht; geselecteerd gebouw;
+open upgradevenster met kosten; en hetzelfde venster bij onvoldoende resources of
+een gem-aanbieding. Open die schermen uitsluitend zelf. De bot voert in deze
+modus geen acties uit. De resultaten staan lokaal in `artifacts/` en worden
+genegeerd door Git. Deze beelden zijn nodig om bouwers, valuta, kosten en
+knoppen te kalibreren voordat een upgrade veilig kan worden geautomatiseerd.

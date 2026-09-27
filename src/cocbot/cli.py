@@ -8,6 +8,7 @@ from .collector import Collector
 from .config import Settings
 from .device import DeviceError
 from .runtime import Runtime
+from .survey import STAGES, capture_stage
 from .telemetry import configure_logging
 
 
@@ -30,6 +31,11 @@ def main(argv=None) -> int:
         action="store_true",
         help="Plan one resource collection (dry run by default)",
     )
+    mode.add_argument(
+        "--survey-stage",
+        choices=STAGES,
+        help="Capture one progression screen after positioning the UI manually; no taps",
+    )
     parser.add_argument(
         "--execute",
         action="store_true",
@@ -44,7 +50,7 @@ def main(argv=None) -> int:
         parser.error("--observe must be positive")
     if args.execute and not args.collect:
         parser.error("--execute requires --collect")
-    if not args.probe and args.observe is None and not args.collect:
+    if not args.probe and args.observe is None and not args.collect and not args.survey_stage:
         parser.print_help()
         return 0
     configure_logging()
@@ -56,6 +62,10 @@ def main(argv=None) -> int:
             settings = replace(settings, adb_serial=args.serial)
         runtime = Runtime(settings, args.profile)
         args.output.mkdir(parents=True, exist_ok=True)
+        if args.survey_stage:
+            path = capture_stage(runtime, args.survey_stage, args.output)
+            print(f"Saved read-only survey: {path}")
+            return 0
         if args.collect:
             result = Collector(runtime).run(args.output, execute=args.execute)
             report_path = args.output / f"collection-{time.time_ns()}.json"
