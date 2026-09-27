@@ -23,7 +23,7 @@ jobs:
       - run: python -m pip install -e ".[dev]"
       - run: python -m pytest -q
       - run: ruff check src tests scripts
-      - run: pyinstaller --onefile --name CoCBot --paths src scripts/cocbot_entry.py
+      - run: pyinstaller --onefile --name CoCBot --paths src --collect-data rapidocr_onnxruntime --collect-binaries onnxruntime scripts/cocbot_entry.py
       - uses: actions/upload-artifact@v4
         with:
           name: CoCBot-Windows

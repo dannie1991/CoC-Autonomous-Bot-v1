@@ -23,6 +23,7 @@ uitvoeren.
 - ADB-verbinding en live PNG-frame valideren
 - live beeld in het geheugen analyseren zonder frame op schijf te bewaren
 - ondersteunde resolutie rapporteren
+- HOME, attack-menu, zoeken, battle en results herkennen uit Engelse UI-tekst
 - Windows `.exe` bouwen via GitHub Actions
 
 Screenherkenning, upgrades, training en aanvallen zijn nog niet geïmplementeerd.
