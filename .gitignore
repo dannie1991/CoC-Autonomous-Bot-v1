@@ -8,3 +8,7 @@ screenshots/
 artifacts/
 .idea/
 .vscode/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+profiles/local/

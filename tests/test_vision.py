@@ -1,7 +1,10 @@
 from pathlib import Path
+
 import cv2
 import numpy as np
+
 from cocbot.vision import Screen, Vision
+
 
 def test_unknown_observation_reports_dimensions(tmp_path: Path):
     path = tmp_path / "screen.png"
