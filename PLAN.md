@@ -22,6 +22,7 @@ via ADB. Frames worden alleen tijdelijk in het geheugen gebruikt.
 - [ ] pop-up en onbekend scherm onderscheiden
 - [ ] Engelse UI en ondersteunde resolutie controleren
 - [x] bedragen, builderstatus en Town Hall-tekst parseren
+- [x] OCR-tekst met positie aan builder- en Town Hall-labels koppelen
 - [ ] OCR-tekst aan de juiste resource- en builderpositie koppelen
 - [ ] confidence en harde stop bij onzekere observatie
 

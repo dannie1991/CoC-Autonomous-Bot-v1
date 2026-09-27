@@ -1,5 +1,6 @@
 import pytest
 
+from cocbot.ocr import DetectedText
 from cocbot.progression import (
     Builders,
     Currency,
@@ -8,6 +9,7 @@ from cocbot.progression import (
     parse_amount,
     parse_builders,
     parse_town_hall,
+    read_village_progress,
 )
 
 
@@ -23,6 +25,21 @@ def test_parse_progression_values():
     assert parse_builders("Builders: 2 / 5") == Builders(free=2, total=5)
     assert parse_builders("6/5") is None
     assert parse_town_hall("Town Hall 13") == 13
+
+
+def test_village_text_needs_confident_label_value_pairing():
+    progress = read_village_progress(
+        [
+            DetectedText("Builders", 0.99, (20, 20, 100, 50)),
+            DetectedText("2/5", 0.99, (120, 20, 170, 50)),
+            DetectedText("Town Hall 13", 0.99, (300, 500, 460, 540)),
+        ]
+    )
+    assert progress.builders == Builders(2, 5)
+    assert progress.town_hall == 13
+    assert progress.confidence == 1.0
+    low = read_village_progress([DetectedText("Town Hall 13", 0.94)])
+    assert low.town_hall is None
 
 
 def test_upgrade_is_blocked_until_every_safety_condition_is_verified():
