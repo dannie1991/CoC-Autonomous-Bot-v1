@@ -103,9 +103,8 @@ class AdbDevice:
     def ping(self) -> bool:
         return self._cmd("get-state").stdout.strip() == "device"
 
-    def screenshot(self, destination: str | Path) -> Path:
-        path = Path(destination)
-        path.parent.mkdir(parents=True, exist_ok=True)
+    def screenshot_png(self) -> bytes:
+        """Capture one frame for immediate analysis without writing it to disk."""
         result = self._cmd("exec-out", "screencap", "-p", binary=True)
         try:
             with Image.open(io.BytesIO(result.stdout)) as image:
@@ -114,8 +113,7 @@ class AdbDevice:
                 image.verify()
         except (OSError, ValueError) as exc:
             raise DeviceError("ADB returned an invalid screenshot") from exc
-        path.write_bytes(result.stdout)
-        return path
+        return result.stdout
 
     def tap(self, x: int, y: int) -> None:
         self._cmd("shell", "input", "tap", str(x), str(y))

@@ -1,48 +1,45 @@
-# Eigen CoC-bot: uitvoering en acceptatie
+# Productplan
 
-## Controle op 20 september 2026
+## Uitgangspunt
 
-Repo: dannie1991/CoC-Autonomous-Bot-v1. De oorspronkelijke code bevatte
-een passieve controller, ADB-opdrachten en een classifier die altijd UNKNOWN gaf.
-De oudere m24842/CoC_Bot is een ander project en wordt niet als basis gebruikt.
+De publieke bot bevat geen persoonlijke screenshots, accountgegevens of lokale
+profielen. Iedere gebruiker geeft de bot toegang tot een eigen live MuMu-frame
+via ADB. Frames worden alleen tijdelijk in het geheugen gebruikt.
 
-## 1. MuMu en observatie
+## Fase 1 — distributiebasis
 
-- [x] Eigen lokale checkout en Python-omgeving.
-- [x] MuMu executable detecteren en adres uit MuMuManager lezen.
-- [x] Expliciete apparaatselectie; meerdere apparaten niet willekeurig kiezen.
-- [x] PNG valideren, bruikbare foutmeldingen en JSON-observaties bewaren.
-- [x] Werkelijk beeld van 1920x1080 ontvangen.
+- [x] MuMu- en ADB-detectie
+- [x] veilige verbinding met één instance
+- [x] live framevalidatie zonder bestandsopslag
+- [x] resolutiecontrole
+- [x] Windows-buildworkflow
+- [ ] Windows-build uitvoeren en op een schone pc starten
 
-## 2. Dorpsherkenning en verzamelen
+## Fase 2 — observatie
 
-- [x] Meerdere onafhankelijke UI-ankers voor HOME.
-- [x] Andere resolutie, ontbrekende ankers en gedimde overlays afwijzen.
-- [x] Lokale kalibratie van accountnaam en resourcebubbels.
-- [x] Begrensde verzamelcyclus met nieuwe observatie voor elke klik.
-- [x] Live verzamelcyclus en gewijzigde resources verifiëren: goud 102 -> 2789,
-  elixer 394 -> 3782; twee klikken, daarna gestopt zonder resterende bubbels.
+- [ ] Home, menu, battle, results, pop-up en onbekend scherm onderscheiden
+- [ ] Engelse UI en ondersteunde resolutie controleren
+- [ ] resourcewaarden, builders en Town Hall uitlezen
+- [ ] confidence en harde stop bij onzekere observatie
 
-## 3. Voortgang van het dorp
+## Fase 3 — progression
 
-Nog te implementeren: OCR voor goud/elixer/bouwers/stadhuisniveau, upgrade-menu
-herkennen, kosten en beschikbare bouwers controleren, prioriteiten bepalen,
-upgrade starten en resultaat bevestigen. Daarna nieuwe gebouwen plaatsen en
-laboratorium/helden toevoegen wanneer het account die vrijspeelt.
-Acceptatie: een beschikbare bouwer start één bedoelde upgrade zonder edelstenen,
-met voor- en nabeeld en stop bij onvoldoende middelen of onzekere herkenning.
+- [ ] upgradeprioriteiten als instellingenbestand
+- [ ] dry-run met voorstel voor één upgrade
+- [ ] kosten, vrije builder en resource verifiëren
+- [ ] één upgrade starten en het resultaat bevestigen
+- [ ] nooit gems gebruiken
 
-## 4. Leger en aanvallen
+## Fase 4 — army en battle
 
-Nog te implementeren: legerstatus, aanvalsmenu, tegenstanderbeoordeling,
-troepplaatsing, afloop en terugkeer. Eerst één complete bewaakte aanval testen;
-daarna pas herhaling. Geen vaste schermcoördinaten zonder actuele herkenning.
+- [ ] army status en training
+- [ ] tegenstander beoordelen op lootdrempel
+- [ ] één gecontroleerde aanval uitvoeren
+- [ ] battle-resultaat herkennen en terugkeren
 
-## 5. Autonome cyclus en herstel
+## Fase 5 — autonome loop
 
-Controller aan de bewezen modules koppelen, time-outs/recovery begrenzen,
-stopknop en statusvenster toevoegen. Builder Base krijgt afzonderlijke beelden
-en regels. Acceptatie: langdurige test inclusief netwerkuitval, onbekende popup,
-accountwissel en herstart. De huidige code is nog geen volledige autonome bot.
-
-Screenshots, accountkalibratie en rapporten blijven lokaal in genegeerde mappen.
+- [ ] state-machine koppelen aan de modules
+- [ ] pop-up, disconnect en restart recovery
+- [ ] stopknop, statuslog en lange duurtest
+- [ ] Windows-release en installatiehandleiding
