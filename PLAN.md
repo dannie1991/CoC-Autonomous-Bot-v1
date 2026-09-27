@@ -21,14 +21,15 @@ via ADB. Frames worden alleen tijdelijk in het geheugen gebruikt.
 - [ ] herkenning met echte MuMu-frames valideren
 - [ ] pop-up en onbekend scherm onderscheiden
 - [ ] Engelse UI en ondersteunde resolutie controleren
-- [ ] resourcewaarden, builders en Town Hall uitlezen
+- [x] bedragen, builderstatus en Town Hall-tekst parseren
+- [ ] OCR-tekst aan de juiste resource- en builderpositie koppelen
 - [ ] confidence en harde stop bij onzekere observatie
 
 ## Fase 3 — progression
 
 - [ ] upgradeprioriteiten als instellingenbestand
 - [ ] dry-run met voorstel voor één upgrade
-- [ ] kosten, vrije builder en resource verifiëren
+- [x] kosten, vrije builder en resource in een pure veiligheidsregel verifiëren
 - [ ] één upgrade starten en het resultaat bevestigen
 - [ ] nooit gems gebruiken
 

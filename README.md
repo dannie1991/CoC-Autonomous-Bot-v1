@@ -24,9 +24,12 @@ uitvoeren.
 - live beeld in het geheugen analyseren zonder frame op schijf te bewaren
 - ondersteunde resolutie rapporteren
 - HOME, attack-menu, zoeken, battle en results herkennen uit Engelse UI-tekst
+- bedragen, builderstatus en Town Hall-niveau veilig uit OCR-tekst parseren
 - Windows `.exe` bouwen via GitHub Actions
 
-Screenherkenning, upgrades, training en aanvallen zijn nog niet geïmplementeerd.
+De koppeling tussen OCR-tekst en de resource- en builderposities in een echt
+MuMu-frame is nog niet geïmplementeerd. Upgrades, training en aanvallen zijn
+nog niet geïmplementeerd.
 De applicatie stuurt in de huidige versie geen tikken of swipes naar Clash of
 Clans.
 
