@@ -23,6 +23,14 @@ def test_home_is_recognised_from_live_english_ui_text():
     assert observation.confidence == 0.95
 
 
+def test_home_is_recognised_when_ocr_adds_ui_punctuation():
+    observation = vision_with(("Attack!", 0.99), ("SHOP", 0.95)).observe_png(
+        png(1920, 1080)
+    )
+    assert observation.screen is Screen.HOME
+    assert observation.confidence == 0.95
+
+
 def test_ambiguous_or_low_confidence_text_stops_recognition():
     ambiguous = vision_with(("Attack", 0.99), ("Shop", 0.99), ("Return Home", 0.99))
     assert ambiguous.observe_png(png(1920, 1080)).screen is Screen.UNKNOWN
@@ -30,6 +38,38 @@ def test_ambiguous_or_low_confidence_text_stops_recognition():
     assert low_confidence.observe_png(png(1920, 1080)).screen is Screen.UNKNOWN
     incomplete = vision_with(("Attack", 0.99))
     assert incomplete.observe_png(png(1920, 1080)).screen is Screen.UNKNOWN
+
+
+def test_connection_popup_is_distinguished_from_an_unknown_screen():
+    popup = vision_with(("Connection lost", 0.99), ("Retry", 0.99))
+    assert popup.observe_png(png(1920, 1080)).screen is Screen.POPUP
+
+
+def test_inactivity_popup_is_recognised_from_its_reload_control():
+    popup = vision_with(("RELOAD GAME", 0.99))
+    assert popup.observe_png(png(1920, 1080)).screen is Screen.POPUP
+    compact_popup = vision_with(("RELOADGAME", 0.99), ("Attack", 0.99), ("SHOP", 0.99))
+    assert compact_popup.observe_png(png(1920, 1080)).screen is Screen.POPUP
+
+
+def test_my_army_screen_is_distinguished_from_attack_menu():
+    army = vision_with(("My Army", 0.99), ("Saved Recipes", 0.95))
+    assert army.observe_png(png(1920, 1080)).screen is Screen.ARMY
+
+
+def test_laboratory_screen_is_recognised_from_its_upgrade_controls():
+    laboratory = vision_with(("Laboratory (Level 1)", 0.99), ("Upgrade", 0.95))
+    assert laboratory.observe_png(png(1920, 1080)).screen is Screen.LABORATORY
+
+
+def test_selected_town_hall_is_recognised_while_under_construction():
+    town_hall = vision_with(
+        ("Town Hall (Level 3)", 0.99),
+        ("Cancel", 0.95),
+        ("Attack", 0.99),
+        ("Shop", 0.99),
+    )
+    assert town_hall.observe_png(png(1920, 1080)).screen is Screen.TOWN_HALL
 
 
 def test_unsupported_resolution_is_rejected():

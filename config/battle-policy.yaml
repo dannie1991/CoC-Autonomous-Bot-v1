@@ -1,0 +1,4 @@
+# Minimum verified loot before a future battle action may be considered.
+gold: 100000
+elixir: 100000
+dark_elixir: 0

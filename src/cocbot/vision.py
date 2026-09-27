@@ -10,8 +10,12 @@ from .ocr import DetectedText, RapidTextReader
 
 class Screen(Enum):
     UNKNOWN = auto()
+    POPUP = auto()
     HOME = auto()
     ATTACK_MENU = auto()
+    ARMY = auto()
+    LABORATORY = auto()
+    TOWN_HALL = auto()
     SEARCHING = auto()
     BATTLE = auto()
     RESULTS = auto()
@@ -40,7 +44,11 @@ class Vision:
 
     @staticmethod
     def _normalise(value: str) -> str:
-        return " ".join(value.casefold().replace("’", "'").split())
+        cleaned = "".join(
+            character if character.isalnum() or character.isspace() else " "
+            for character in value.casefold().replace("’", "'")
+        )
+        return " ".join(cleaned.split())
 
     def _read(self, image: np.ndarray) -> list[DetectedText]:
         if self._reader:
@@ -49,23 +57,62 @@ class Vision:
 
     @staticmethod
     def _match(tokens: dict[str, float], phrases: tuple[str, ...]) -> float | None:
-        if any(phrase not in tokens for phrase in phrases):
-            return None
-        return min(tokens[phrase] for phrase in phrases)
+        scores = []
+        for phrase in phrases:
+            matches = [score for token, score in tokens.items() if phrase in token]
+            if not matches:
+                return None
+            scores.append(max(matches))
+        return min(scores)
 
     def _classify(self, image: np.ndarray) -> tuple[Screen, float, str]:
         try:
             texts = self._read(image)
         except RuntimeError as exc:
             return Screen.UNKNOWN, 0.0, str(exc)
+        return self._classify_texts(texts)
+
+    def _classify_texts(self, texts: list[DetectedText]) -> tuple[Screen, float, str]:
         tokens = {
             self._normalise(text.value): text.confidence
             for text in texts
             if text.confidence >= 0.75
         }
+        popup_rules = (
+            ("connection lost", "retry"),
+            ("reload game",),
+            ("reloadgame",),
+            ("anyone there",),
+        )
+        popup_matches = [
+            self._match(tokens, phrases)
+            for phrases in popup_rules
+            if self._match(tokens, phrases) is not None
+        ]
+        if popup_matches:
+            return (
+                Screen.POPUP,
+                max(popup_matches),
+                "English popup signature matched by live OCR",
+            )
+        selected_rules = (
+            (Screen.LABORATORY, ("laboratory level", "upgrade")),
+            (Screen.TOWN_HALL, ("town hall level",)),
+        )
+        selected_matches = [
+            (screen, self._match(tokens, phrases))
+            for screen, phrases in selected_rules
+            if self._match(tokens, phrases) is not None
+        ]
+        if len(selected_matches) == 1:
+            screen, confidence = selected_matches[0]
+            return screen, confidence, "Selected building signature matched by live OCR"
+        if len(selected_matches) > 1:
+            return Screen.UNKNOWN, 0.0, "Multiple selected-building signatures matched"
         rules = (
             (Screen.HOME, ("attack", "shop")),
             (Screen.ATTACK_MENU, ("find a match", "multiplayer")),
+            (Screen.ARMY, ("my army", "saved recipes")),
             (Screen.SEARCHING, ("searching for opponents",)),
             (Screen.BATTLE, ("end battle",)),
             (Screen.RESULTS, ("return home",)),
@@ -80,17 +127,33 @@ class Vision:
         screen, confidence = matches[0]
         return screen, confidence, "English UI signature matched by live OCR"
 
-    def observe_png(self, png: bytes) -> Observation:
+    @staticmethod
+    def _decode_png(png: bytes) -> np.ndarray:
         image = cv2.imdecode(np.frombuffer(png, dtype=np.uint8), cv2.IMREAD_COLOR)
         if image is None:
             raise ValueError("Could not decode emulator PNG frame")
+        return image
+
+    def inspect_png(self, png: bytes) -> tuple[Observation, list[DetectedText]]:
+        """Classify one in-memory frame and return its transient OCR results."""
+        image = self._decode_png(png)
         height, width = image.shape[:2]
         if (width, height) not in self.supported_resolutions:
-            return Observation(
-                Screen.UNKNOWN,
-                width,
-                height,
-                reason="Unsupported emulator resolution",
+            return (
+                Observation(
+                    Screen.UNKNOWN,
+                    width,
+                    height,
+                    reason="Unsupported emulator resolution",
+                ),
+                [],
             )
-        screen, confidence, reason = self._classify(image)
-        return Observation(screen, width, height, confidence=confidence, reason=reason)
+        try:
+            texts = self._read(image)
+        except RuntimeError as exc:
+            return Observation(Screen.UNKNOWN, width, height, reason=str(exc)), []
+        screen, confidence, reason = self._classify_texts(texts)
+        return Observation(screen, width, height, confidence=confidence, reason=reason), texts
+
+    def observe_png(self, png: bytes) -> Observation:
+        return self.inspect_png(png)[0]

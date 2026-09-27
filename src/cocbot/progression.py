@@ -36,15 +36,26 @@ class UpgradeDecision:
 
 
 @dataclass(frozen=True)
+class Resources:
+    gold: int | None
+    elixir: int | None
+    dark_elixir: int | None
+    confidence: float
+
+
+@dataclass(frozen=True)
 class VillageProgress:
     builders: Builders | None
     town_hall: int | None
     confidence: float
+    resources: Resources | None = None
 
 
 _AMOUNT = re.compile(r"^\s*(\d+(?:[.,]\d+)?)\s*([kmb])?\s*$", re.IGNORECASE)
 _BUILDERS = re.compile(r"\b(\d+)\s*/\s*(\d+)\b")
-_TOWN_HALL = re.compile(r"\btown\s*hall\s*(\d+)\b", re.IGNORECASE)
+_TOWN_HALL = re.compile(
+    r"\btown\s*hall(?:\s*\(?\s*level)?\s*(\d+)\b", re.IGNORECASE
+)
 
 
 def parse_amount(value: str) -> int | None:
@@ -101,10 +112,67 @@ def _nearby_value(label: DetectedText, values: list[DetectedText]) -> DetectedTe
     return min(candidates, default=(0, None), key=lambda candidate: candidate[0])[1]
 
 
-def read_village_progress(texts: list[DetectedText]) -> VillageProgress:
+def read_resources(
+    texts: list[DetectedText], width: int, height: int
+) -> Resources:
+    """Read the three normal resources from their standard HOME HUD bands.
+
+    The HUD uses icons rather than stable English labels, so a number is trusted
+    only when it appears in the corresponding right-hand resource band.
+    """
+    bands = {
+        "gold": (0.02, 0.10),
+        "elixir": (0.11, 0.20),
+        "dark_elixir": (0.20, 0.30),
+    }
+    values: dict[str, tuple[int, float] | None] = {}
+    for name, (top, bottom) in bands.items():
+        candidates = []
+        for text in texts:
+            if text.center is None or text.confidence < 0.75:
+                continue
+            amount = parse_amount(text.value)
+            x, y = text.center
+            # OCR can lose leading digits from a highlighted HUD value (for
+            # example, 11 000 becomes 000). Treat an all-zero multi-digit
+            # fragment as unreadable rather than treating it as zero gold.
+            incomplete_zero = amount == 0 and len(re.sub(r"\D", "", text.value)) >= 3
+            if (
+                amount is not None
+                and not incomplete_zero
+                and x >= width * 0.78
+                and height * top <= y <= height * bottom
+            ):
+                candidates.append((text.confidence, amount))
+        values[name] = max(candidates, default=None, key=lambda candidate: candidate[0])
+    observed = [value[0] for value in values.values() if value is not None]
+    return Resources(
+        gold=values["gold"][1] if values["gold"] else None,
+        elixir=values["elixir"][1] if values["elixir"] else None,
+        dark_elixir=values["dark_elixir"][1] if values["dark_elixir"] else None,
+        confidence=min(observed, default=0.0),
+    )
+
+
+def read_village_progress(
+    texts: list[DetectedText], width: int | None = None, height: int | None = None
+) -> VillageProgress:
     """Read only values that OCR can tie to a nearby English label."""
     trusted = [text for text in texts if text.confidence >= 0.95]
-    builders = next((parse_builders(text.value) for text in trusted if parse_builders(text.value)), None)
+    builders = None
+    if width and height:
+        builder_candidates = [
+            text
+            for text in trusted
+            if text.center is not None
+            and parse_builders(text.value)
+            and width * 0.40 <= text.center[0] <= width * 0.60
+            and text.center[1] <= height * 0.12
+        ]
+        if len(builder_candidates) == 1:
+            builders = parse_builders(builder_candidates[0].value)
+    if builders is None:
+        builders = next((parse_builders(text.value) for text in trusted if parse_builders(text.value)), None)
     if builders is None:
         labels = [text for text in trusted if text.value.casefold().strip() == "builders"]
         values = [text for text in trusted if parse_builders(text.value)]
@@ -116,7 +184,13 @@ def read_village_progress(texts: list[DetectedText]) -> VillageProgress:
     town_hall = next((parse_town_hall(text.value) for text in trusted if parse_town_hall(text.value)), None)
     recognised = [value for value in (builders, town_hall) if value is not None]
     confidence = 1.0 if len(recognised) == 2 else (0.95 if recognised else 0.0)
-    return VillageProgress(builders=builders, town_hall=town_hall, confidence=confidence)
+    resources = read_resources(texts, width, height) if width and height else None
+    return VillageProgress(
+        builders=builders,
+        town_hall=town_hall,
+        confidence=confidence,
+        resources=resources,
+    )
 
 
 def decide_upgrade(
